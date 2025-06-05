@@ -3,5 +3,22 @@ version: '0.1.0'
 main: cc.keiran.claramella.Claramella
 api-version: '1.21'
 author: Keiran
-description: Random features for QOL
+description: Random features for QOL with configurable database system
 website: https://keiran.cc
+
+commands:
+  claramella:
+    description: Main command for Claramella plugin configuration
+    usage: /<command> <subcommand> [args...]
+    aliases: [clara, cm]
+    permission: claramella.config
+
+permissions:
+  claramella.*:
+    description: Gives access to all Claramella commands
+    default: op
+    children:
+      claramella.config: true
+  claramella.config:
+    description: Allows access to configuration commands
+    default: op

@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import cc.keiran.claramella.Claramella;
+import cc.keiran.claramella.config.DatabaseManager;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,16 +23,43 @@ import java.util.UUID;
 public class SleepListener implements Listener {
 
     private final Claramella plugin;
-    private final long SLEEP_DELAY_TICKS = 100L;
-    private final long SLEEP_CHECK_INTERVAL = 20L;
-    private final double SLEEP_PERCENTAGE_REQUIRED = 0.5;
-    private final int MINIMUM_PLAYERS_FOR_VOTE = 2;
+    private final DatabaseManager databaseManager;
     
     private final Map<UUID, Set<UUID>> sleepingPlayers = new HashMap<>();
     private final Map<UUID, BukkitTask> activeSleepTasks = new HashMap<>();
 
-    public SleepListener(Claramella plugin) {
+    public SleepListener(Claramella plugin, DatabaseManager databaseManager) {
         this.plugin = plugin;
+        this.databaseManager = databaseManager;
+    }
+
+    private long getSleepDelayTicks() {
+        return databaseManager.getConfigValue("sleep.delay_ticks", Long.class, 100L);
+    }
+    
+    private long getSleepCheckInterval() {
+        return databaseManager.getConfigValue("sleep.check_interval", Long.class, 20L);
+    }
+    
+    private double getSleepPercentageRequired() {
+        return databaseManager.getConfigValue("sleep.percentage_required", Double.class, 0.5);
+    }
+    
+    private int getMinimumPlayersForVote() {
+        return databaseManager.getConfigValue("sleep.minimum_players_for_vote", Integer.class, 2);
+    }
+    
+    private boolean isSinglePlayerSkipEnabled() {
+        return databaseManager.getConfigValue("sleep.single_player_skip", Boolean.class, true);
+    }
+    
+    private boolean shouldShowProgressMessages() {
+        return databaseManager.getConfigValue("sleep.show_progress_messages", Boolean.class, true);
+    }
+    
+    private String getSkipMessage() {
+        return databaseManager.getConfigValue("sleep.skip_message", String.class, 
+            "☀ The night has been skipped! Good morning!");
     }
 
     private boolean isValidSleepTime(World world) {
@@ -44,10 +72,10 @@ public class SleepListener implements Listener {
 
     private int getRequiredSleepers(World world) {
         int onlinePlayers = world.getPlayers().size();
-        if (onlinePlayers <= MINIMUM_PLAYERS_FOR_VOTE) {
+        if (onlinePlayers <= getMinimumPlayersForVote()) {
             return 1;
         }
-        return Math.max(1, (int) Math.ceil(onlinePlayers * SLEEP_PERCENTAGE_REQUIRED));
+        return Math.max(1, (int) Math.ceil(onlinePlayers * getSleepPercentageRequired()));
     }
 
     private int getCurrentSleepers(World world) {
@@ -75,7 +103,7 @@ public class SleepListener implements Listener {
     }
 
     private void skipNight(World world) {
-        world.setTime(0); // Set to dawn
+        world.setTime(0);
         world.setStorm(false);
         world.setThundering(false);
         
@@ -87,7 +115,7 @@ public class SleepListener implements Listener {
         }
         
         Bukkit.broadcastMessage(
-            ChatColor.GREEN + "☀ " + ChatColor.YELLOW + "The night has been skipped! Good morning!"
+            ChatColor.GREEN + getSkipMessage()
         );
     }
 
@@ -128,7 +156,7 @@ public class SleepListener implements Listener {
                     this.cancel();
                 }
             }
-        }.runTaskTimer(plugin, SLEEP_DELAY_TICKS, SLEEP_CHECK_INTERVAL);
+        }.runTaskTimer(plugin, getSleepDelayTicks(), getSleepCheckInterval());
         
         activeSleepTasks.put(worldId, task);
     }

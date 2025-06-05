@@ -8,3 +8,4 @@ bin/
 *.tar
 *.tar.gz
 *.log
+*DOCUMENTATION*
