@@ -1,0 +1,10 @@
+.gradle/
+build/
+bin/
+*.jar
+*.war
+*.ear
+*.zip
+*.tar
+*.tar.gz
+*.log
