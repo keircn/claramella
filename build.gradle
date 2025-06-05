@@ -4,7 +4,7 @@ plugins {
 
 group = 'cc.keiran'
 version = '0.1.0'
-description = 'HelloPaper PaperMC Plugin'
+description = 'Claramella'
 
 repositories {
     mavenCentral()
@@ -21,4 +21,10 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+tasks.jar {
+    archiveBaseName = project.name
+    archiveVersion = ''
+    archiveClassifier = ''
 }

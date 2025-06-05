@@ -1,7 +1,7 @@
-name: HelloPaper
+name: Claramella
 version: '0.1.0'
-main: cc.keiran.hellopaper.HelloPaper
+main: cc.keiran.claramella.Claramella
 api-version: '1.21'
 author: Keiran
-description: Sends a hello message to players on join.
+description: Random features for QOL
 website: https://keiran.cc
