@@ -7,7 +7,6 @@ import cc.keiran.claramella.config.DatabaseManager;
 import cc.keiran.claramella.features.admin.AdminManager;
 import cc.keiran.claramella.features.sleep.SleepListener;
 import cc.keiran.claramella.features.welcome.WelcomeListener;
-import cc.keiran.claramella.test.ConfigTest;
 
 public class Claramella extends JavaPlugin {
 
@@ -28,6 +27,7 @@ public class Claramella extends JavaPlugin {
         
         getServer().getPluginManager().registerEvents(welcomeListener, this);
         getServer().getPluginManager().registerEvents(sleepListener, this);
+        getServer().getPluginManager().registerEvents(adminManager, this);
         
         ConfigCommand configCommand = new ConfigCommand(this, databaseManager);
         getCommand("claramella").setExecutor(configCommand);
@@ -38,12 +38,10 @@ public class Claramella extends JavaPlugin {
         getCommand("admin").setTabCompleter(adminCommand);
 
         if (databaseManager.getConfigValue("plugin.debug_mode", Boolean.class, false)) {
-            getLogger().info("Debug mode enabled - running configuration system test");
-            ConfigTest.runTest(this);
-            ConfigTest.logDatabaseInfo(this, databaseManager);
+            getLogger().info("Debug mode enabled - enhanced logging active");
         }
 
-        getLogger().info("Claramella has been enabled with database configuration system.");
+        getLogger().info("Claramella has been enabled with admin management and database configuration system.");
     }
 
     @Override

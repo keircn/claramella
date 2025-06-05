@@ -30,6 +30,28 @@ public class AdminManager implements Listener {
     }
 
     private void loadInvulnerablePlayersFromDatabase() {
+        String invulnPlayers = databaseManager.getConfigValue("admin.invulnerable_players", String.class, "");
+        String godModePlayers = databaseManager.getConfigValue("admin.godmode_players", String.class, "");
+        
+        if (!invulnPlayers.isEmpty()) {
+            for (String uuidStr : invulnPlayers.split(",")) {
+                try {
+                    this.invulnerablePlayers.add(UUID.fromString(uuidStr.trim()));
+                } catch (IllegalArgumentException e) {
+                    plugin.getLogger().warning("Invalid UUID in invulnerable players: " + uuidStr);
+                }
+            }
+        }
+        
+        if (!godModePlayers.isEmpty()) {
+            for (String uuidStr : godModePlayers.split(",")) {
+                try {
+                    this.godModePlayers.add(UUID.fromString(uuidStr.trim()));
+                } catch (IllegalArgumentException e) {
+                    plugin.getLogger().warning("Invalid UUID in god mode players: " + uuidStr);
+                }
+            }
+        }
     }
 
     public boolean isInvulnerable(UUID playerId) {
@@ -46,6 +68,7 @@ public class AdminManager implements Listener {
         if (player != null) {
             player.setInvulnerable(invulnerable);
         }
+        saveInvulnerablePlayersToDatabase();
     }
 
     public void setGodMode(UUID playerId, boolean godMode) {
@@ -62,6 +85,7 @@ public class AdminManager implements Listener {
                 feedPlayer(player);
             }
         }
+        saveGodModePlayersToDatabase();
     }
 
     public void healPlayer(Player player) {
@@ -109,16 +133,23 @@ public class AdminManager implements Listener {
                 player.setWalkSpeed(0);
                 player.setFlySpeed(0);
             } else {
-                player.setWalkSpeed(0.2f);
-                player.setFlySpeed(0.1f);
+                float defaultWalkSpeed = databaseManager.getConfigValue("admin.default_walk_speed", Float.class, 0.2f);
+                float defaultFlySpeed = databaseManager.getConfigValue("admin.default_fly_speed", Float.class, 0.1f);
+                player.setWalkSpeed(defaultWalkSpeed);
+                player.setFlySpeed(defaultFlySpeed);
             }
         }
     }
 
     public void setPlayerSpeed(Player player, float speed) {
-        float clampedSpeed = Math.max(0, Math.min(1, speed));
-        player.setWalkSpeed(clampedSpeed);
-        player.setFlySpeed(clampedSpeed);
+        float maxWalkSpeed = databaseManager.getConfigValue("admin.max_walk_speed", Float.class, 1.0f);
+        float maxFlySpeed = databaseManager.getConfigValue("admin.max_fly_speed", Float.class, 1.0f);
+        
+        float clampedWalkSpeed = Math.max(0, Math.min(maxWalkSpeed, speed));
+        float clampedFlySpeed = Math.max(0, Math.min(maxFlySpeed, speed));
+        
+        player.setWalkSpeed(clampedWalkSpeed);
+        player.setFlySpeed(clampedFlySpeed);
     }
 
     public void toggleFly(Player player) {
@@ -180,5 +211,23 @@ public class AdminManager implements Listener {
             }
         }
         godModePlayers.clear();
+        saveInvulnerablePlayersToDatabase();
+        saveGodModePlayersToDatabase();
+    }
+
+    private void saveInvulnerablePlayersToDatabase() {
+        String playerList = invulnerablePlayers.stream()
+            .map(UUID::toString)
+            .reduce((a, b) -> a + "," + b)
+            .orElse("");
+        databaseManager.setConfigValue("admin.invulnerable_players", playerList);
+    }
+    
+    private void saveGodModePlayersToDatabase() {
+        String playerList = godModePlayers.stream()
+            .map(UUID::toString)
+            .reduce((a, b) -> a + "," + b)
+            .orElse("");
+        databaseManager.setConfigValue("admin.godmode_players", playerList);
     }
 }

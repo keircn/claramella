@@ -45,6 +45,11 @@ public class DatabaseManager {
         defaultConfig.put("admin.invulnerability_timeout", 300000L);
         defaultConfig.put("admin.announce_god_mode", true);
         defaultConfig.put("admin.announce_invulnerability", true);
+        defaultConfig.put("admin.invulnerable_players", "");
+        defaultConfig.put("admin.godmode_players", "");
+        defaultConfig.put("admin.heal_removes_exhaustion", true);
+        defaultConfig.put("admin.max_gives_experience", false);
+        defaultConfig.put("admin.auto_heal_on_join", false);
         defaultConfig.put("plugin.debug_mode", false);
         defaultConfig.put("plugin.language", "en");
     }
@@ -150,6 +155,16 @@ public class DatabaseManager {
             case "welcome.enabled" -> "Enable welcome messages for joining players";
             case "welcome.message" -> "Welcome message template ({player} for player name)";
             case "welcome.log_joins" -> "Log player joins to console";
+            case "admin.default_fly_speed" -> "Default flight speed for players (0.0-1.0)";
+            case "admin.default_walk_speed" -> "Default walking speed for players (0.0-1.0)";
+            case "admin.max_fly_speed" -> "Maximum allowed flight speed (0.0-1.0)";
+            case "admin.max_walk_speed" -> "Maximum allowed walking speed (0.0-1.0)";
+            case "admin.invulnerability_timeout" -> "Time in milliseconds before invulnerability expires";
+            case "admin.announce_god_mode" -> "Announce when players enter/exit god mode";
+            case "admin.announce_invulnerability" -> "Announce when players become invulnerable";
+            case "admin.heal_removes_exhaustion" -> "Whether healing removes player exhaustion";
+            case "admin.max_gives_experience" -> "Whether max command gives experience points";
+            case "admin.auto_heal_on_join" -> "Automatically heal admins when they join";
             case "plugin.debug_mode" -> "Enable debug logging";
             case "plugin.language" -> "Plugin language (en, es, fr, etc.)";
             default -> "Configuration value for " + key;

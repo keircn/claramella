@@ -35,6 +35,16 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
         validKeys.put("welcome.enabled", Boolean.class);
         validKeys.put("welcome.message", String.class);
         validKeys.put("welcome.log_joins", Boolean.class);
+        validKeys.put("admin.default_fly_speed", Float.class);
+        validKeys.put("admin.default_walk_speed", Float.class);
+        validKeys.put("admin.max_fly_speed", Float.class);
+        validKeys.put("admin.max_walk_speed", Float.class);
+        validKeys.put("admin.invulnerability_timeout", Long.class);
+        validKeys.put("admin.announce_god_mode", Boolean.class);
+        validKeys.put("admin.announce_invulnerability", Boolean.class);
+        validKeys.put("admin.heal_removes_exhaustion", Boolean.class);
+        validKeys.put("admin.max_gives_experience", Boolean.class);
+        validKeys.put("admin.auto_heal_on_join", Boolean.class);
         validKeys.put("plugin.debug_mode", Boolean.class);
         validKeys.put("plugin.language", String.class);
     }
@@ -155,6 +165,12 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
             }
             case "sleep.minimum_players_for_vote" -> (Integer) value >= 1;
             case "sleep.delay_ticks", "sleep.check_interval" -> (Long) value > 0;
+            case "admin.default_fly_speed", "admin.default_walk_speed", 
+                 "admin.max_fly_speed", "admin.max_walk_speed" -> {
+                float f = (Float) value;
+                yield f >= 0.0f && f <= 1.0f;
+            }
+            case "admin.invulnerability_timeout" -> (Long) value >= 0;
             default -> true;
         };
     }
@@ -164,6 +180,9 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
             case "sleep.percentage_required" -> "Value must be between 0.0 and 1.0";
             case "sleep.minimum_players_for_vote" -> "Value must be at least 1";
             case "sleep.delay_ticks", "sleep.check_interval" -> "Value must be greater than 0";
+            case "admin.default_fly_speed", "admin.default_walk_speed", 
+                 "admin.max_fly_speed", "admin.max_walk_speed" -> "Value must be between 0.0 and 1.0";
+            case "admin.invulnerability_timeout" -> "Value must be 0 or greater (milliseconds)";
             default -> "";
         };
     }
@@ -244,6 +263,16 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
             case "welcome.enabled" -> true;
             case "welcome.message" -> "Welcome to the server, {player}!";
             case "welcome.log_joins" -> true;
+            case "admin.default_fly_speed" -> 0.1f;
+            case "admin.default_walk_speed" -> 0.2f;
+            case "admin.max_fly_speed" -> 1.0f;
+            case "admin.max_walk_speed" -> 1.0f;
+            case "admin.invulnerability_timeout" -> 300000L;
+            case "admin.announce_god_mode" -> true;
+            case "admin.announce_invulnerability" -> true;
+            case "admin.heal_removes_exhaustion" -> true;
+            case "admin.max_gives_experience" -> false;
+            case "admin.auto_heal_on_join" -> false;
             case "plugin.debug_mode" -> false;
             case "plugin.language" -> "en";
             default -> null;
