@@ -12,6 +12,11 @@ commands:
     usage: /<command> <subcommand> [args...]
     aliases: [clara, cm]
     permission: claramella.config
+  admin:
+    description: Admin utility commands for player management
+    usage: /<command> <subcommand> [args...]
+    aliases: [a]
+    permission: claramella.admin
 
 permissions:
   claramella.*:
@@ -19,6 +24,76 @@ permissions:
     default: op
     children:
       claramella.config: true
+      claramella.admin: true
+      claramella.admin.heal: true
+      claramella.admin.feed: true
+      claramella.admin.max: true
+      claramella.admin.kill: true
+      claramella.admin.invuln: true
+      claramella.admin.godmode: true
+      claramella.admin.tp: true
+      claramella.admin.tphere: true
+      claramella.admin.freeze: true
+      claramella.admin.speed: true
+      claramella.admin.fly: true
+      claramella.admin.clear: true
+      claramella.admin.list: true
   claramella.config:
     description: Allows access to configuration commands
+    default: op
+  claramella.admin:
+    description: Base admin permission
+    default: op
+    children:
+      claramella.admin.heal: true
+      claramella.admin.feed: true
+      claramella.admin.max: true
+      claramella.admin.kill: true
+      claramella.admin.invuln: true
+      claramella.admin.godmode: true
+      claramella.admin.tp: true
+      claramella.admin.tphere: true
+      claramella.admin.freeze: true
+      claramella.admin.speed: true
+      claramella.admin.fly: true
+      claramella.admin.clear: true
+      claramella.admin.list: true
+  claramella.admin.heal:
+    description: Allows healing players
+    default: op
+  claramella.admin.feed:
+    description: Allows feeding players
+    default: op
+  claramella.admin.max:
+    description: Allows maxing out player health and hunger
+    default: op
+  claramella.admin.kill:
+    description: Allows killing players
+    default: op
+  claramella.admin.invuln:
+    description: Allows toggling player invulnerability
+    default: op
+  claramella.admin.godmode:
+    description: Allows toggling player god mode
+    default: op
+  claramella.admin.tp:
+    description: Allows teleporting to players
+    default: op
+  claramella.admin.tphere:
+    description: Allows teleporting players to you
+    default: op
+  claramella.admin.freeze:
+    description: Allows freezing/unfreezing players
+    default: op
+  claramella.admin.speed:
+    description: Allows changing player movement speed
+    default: op
+  claramella.admin.fly:
+    description: Allows toggling player flight
+    default: op
+  claramella.admin.clear:
+    description: Allows clearing player inventories
+    default: op
+  claramella.admin.list:
+    description: Allows listing admin status of players
     default: op

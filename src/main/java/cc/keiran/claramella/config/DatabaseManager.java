@@ -38,6 +38,13 @@ public class DatabaseManager {
         defaultConfig.put("welcome.enabled", true);
         defaultConfig.put("welcome.message", "Welcome to the server, {player}!");
         defaultConfig.put("welcome.log_joins", true);
+        defaultConfig.put("admin.default_fly_speed", 0.1f);
+        defaultConfig.put("admin.default_walk_speed", 0.2f);
+        defaultConfig.put("admin.max_fly_speed", 1.0f);
+        defaultConfig.put("admin.max_walk_speed", 1.0f);
+        defaultConfig.put("admin.invulnerability_timeout", 300000L);
+        defaultConfig.put("admin.announce_god_mode", true);
+        defaultConfig.put("admin.announce_invulnerability", true);
         defaultConfig.put("plugin.debug_mode", false);
         defaultConfig.put("plugin.language", "en");
     }
