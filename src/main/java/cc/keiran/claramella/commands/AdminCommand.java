@@ -5,6 +5,7 @@ import cc.keiran.claramella.config.DatabaseManager;
 import cc.keiran.claramella.features.admin.AdminManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -53,6 +54,8 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             case "speed" -> handleSpeed(sender, args);
             case "fly" -> handleFly(sender, args);
             case "list" -> handleList(sender);
+            case "status", "check" -> handleStatus(sender, args);
+            case "remove" -> handleRemove(sender, args);
             case "clear" -> handleClear(sender);
             default -> sendHelp(sender);
         }
@@ -147,13 +150,14 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     
     private void handleInvulnerable(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /admin invulnerable <player> [true/false]");
+            sender.sendMessage(ChatColor.RED + "Usage: /admin invulnerable <player|uuid> [true/false]");
+            sender.sendMessage(ChatColor.YELLOW + "You can use player names or UUIDs to target offline players");
             return;
         }
         
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            sender.sendMessage(ChatColor.RED + "Player not found: " + args[1]);
+        OfflinePlayer target = resolvePlayer(args[1]);
+        if (!canModifyOfflinePlayer(target)) {
+            sender.sendMessage(ChatColor.RED + "Player not found or has never joined: " + args[1]);
             return;
         }
         
@@ -167,19 +171,24 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         adminManager.setInvulnerable(target.getUniqueId(), invulnerable);
         
         String status = invulnerable ? "enabled" : "disabled";
-        sender.sendMessage(ChatColor.GREEN + "Invulnerability " + status + " for " + target.getName());
-        target.sendMessage(ChatColor.AQUA + "Invulnerability has been " + status + " by " + sender.getName());
+        String displayName = getPlayerDisplayName(target);
+        sender.sendMessage(ChatColor.GREEN + "Invulnerability " + status + " for " + displayName);
+        
+        if (target instanceof Player onlineTarget) {
+            onlineTarget.sendMessage(ChatColor.AQUA + "Invulnerability has been " + status + " by " + sender.getName());
+        }
     }
     
     private void handleGodMode(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /admin godmode <player> [true/false]");
+            sender.sendMessage(ChatColor.RED + "Usage: /admin godmode <player|uuid> [true/false]");
+            sender.sendMessage(ChatColor.YELLOW + "You can use player names or UUIDs to target offline players");
             return;
         }
         
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            sender.sendMessage(ChatColor.RED + "Player not found: " + args[1]);
+        OfflinePlayer target = resolvePlayer(args[1]);
+        if (!canModifyOfflinePlayer(target)) {
+            sender.sendMessage(ChatColor.RED + "Player not found or has never joined: " + args[1]);
             return;
         }
         
@@ -193,8 +202,12 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         adminManager.setGodMode(target.getUniqueId(), godMode);
         
         String status = godMode ? "enabled" : "disabled";
-        sender.sendMessage(ChatColor.GREEN + "God mode " + status + " for " + target.getName());
-        target.sendMessage(ChatColor.GOLD + "God mode has been " + status + " by " + sender.getName());
+        String displayName = getPlayerDisplayName(target);
+        sender.sendMessage(ChatColor.GREEN + "God mode " + status + " for " + displayName);
+        
+        if (target instanceof Player onlineTarget) {
+            onlineTarget.sendMessage(ChatColor.GOLD + "God mode has been " + status + " by " + sender.getName());
+        }
     }
     
     private void handleTeleport(CommandSender sender, String[] args) {
@@ -323,24 +336,26 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         if (!invulnerable.isEmpty()) {
             sender.sendMessage(ChatColor.AQUA + "Invulnerable Players:");
             for (UUID uuid : invulnerable) {
-                Player player = Bukkit.getPlayer(uuid);
-                String name = player != null ? player.getName() : uuid.toString();
-                sender.sendMessage(ChatColor.WHITE + "  - " + name);
+                OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+                String displayName = getPlayerDisplayName(player);
+                sender.sendMessage(ChatColor.WHITE + "  - " + displayName + ChatColor.GRAY + " (" + uuid + ")");
             }
         }
         
         if (!godMode.isEmpty()) {
             sender.sendMessage(ChatColor.GOLD + "God Mode Players:");
             for (UUID uuid : godMode) {
-                Player player = Bukkit.getPlayer(uuid);
-                String name = player != null ? player.getName() : uuid.toString();
-                sender.sendMessage(ChatColor.WHITE + "  - " + name);
+                OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+                String displayName = getPlayerDisplayName(player);
+                sender.sendMessage(ChatColor.WHITE + "  - " + displayName + ChatColor.GRAY + " (" + uuid + ")");
             }
         }
         
         if (invulnerable.isEmpty() && godMode.isEmpty()) {
             sender.sendMessage(ChatColor.GRAY + "No players have special admin status.");
         }
+        
+        sender.sendMessage(ChatColor.YELLOW + "Tip: Use UUIDs to manage offline players");
     }
     
     private void handleClear(CommandSender sender) {
@@ -354,15 +369,88 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.YELLOW + "/admin feed [player]" + ChatColor.WHITE + " - Fill player's hunger");
         sender.sendMessage(ChatColor.YELLOW + "/admin max [player]" + ChatColor.WHITE + " - Heal and feed player");
         sender.sendMessage(ChatColor.YELLOW + "/admin kill <player>" + ChatColor.WHITE + " - Kill target player");
-        sender.sendMessage(ChatColor.YELLOW + "/admin invuln <player> [true/false]" + ChatColor.WHITE + " - Toggle invulnerability");
-        sender.sendMessage(ChatColor.YELLOW + "/admin godmode <player> [true/false]" + ChatColor.WHITE + " - Toggle god mode");
+        sender.sendMessage(ChatColor.YELLOW + "/admin invuln <player|uuid> [true/false]" + ChatColor.WHITE + " - Toggle invulnerability");
+        sender.sendMessage(ChatColor.YELLOW + "/admin godmode <player|uuid> [true/false]" + ChatColor.WHITE + " - Toggle god mode");
         sender.sendMessage(ChatColor.YELLOW + "/admin tp <player> <target>" + ChatColor.WHITE + " - Teleport player to target");
         sender.sendMessage(ChatColor.YELLOW + "/admin tphere <player>" + ChatColor.WHITE + " - Teleport player to you");
         sender.sendMessage(ChatColor.YELLOW + "/admin freeze <player> [true/false]" + ChatColor.WHITE + " - Freeze/unfreeze player");
         sender.sendMessage(ChatColor.YELLOW + "/admin speed <player> <speed>" + ChatColor.WHITE + " - Set player speed (0-1)");
         sender.sendMessage(ChatColor.YELLOW + "/admin fly [player]" + ChatColor.WHITE + " - Toggle flight");
         sender.sendMessage(ChatColor.YELLOW + "/admin list" + ChatColor.WHITE + " - List players with admin status");
+        sender.sendMessage(ChatColor.YELLOW + "/admin status <player|uuid>" + ChatColor.WHITE + " - Check player's admin status");
+        sender.sendMessage(ChatColor.YELLOW + "/admin remove <player|uuid>" + ChatColor.WHITE + " - Remove all admin status from player");
         sender.sendMessage(ChatColor.YELLOW + "/admin clear" + ChatColor.WHITE + " - Clear all admin statuses");
+        sender.sendMessage(ChatColor.GRAY + "Note: Use player UUIDs to target offline players for invuln/godmode");
+    }
+    
+    private void handleStatus(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Usage: /admin status <player|uuid>");
+            sender.sendMessage(ChatColor.YELLOW + "Check a player's admin status using name or UUID");
+            return;
+        }
+        
+        OfflinePlayer target = resolvePlayer(args[1]);
+        if (!canModifyOfflinePlayer(target)) {
+            sender.sendMessage(ChatColor.RED + "Player not found or has never joined: " + args[1]);
+            return;
+        }
+        
+        UUID uuid = target.getUniqueId();
+        String displayName = getPlayerDisplayName(target);
+        
+        sender.sendMessage(ChatColor.GREEN + "=== Admin Status for " + displayName + " ===");
+        sender.sendMessage(ChatColor.GRAY + "UUID: " + uuid);
+        sender.sendMessage(ChatColor.AQUA + "Invulnerable: " + 
+            (adminManager.isInvulnerable(uuid) ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No"));
+        sender.sendMessage(ChatColor.GOLD + "God Mode: " + 
+            (adminManager.getGodModePlayers().contains(uuid) ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No"));
+        
+        if (target instanceof Player onlinePlayer) {
+            sender.sendMessage(ChatColor.YELLOW + "Status: " + ChatColor.GREEN + "Online");
+            sender.sendMessage(ChatColor.YELLOW + "Health: " + ChatColor.WHITE + 
+                onlinePlayer.getHealth() + "/" + onlinePlayer.getMaxHealth());
+            sender.sendMessage(ChatColor.YELLOW + "Food: " + ChatColor.WHITE + 
+                onlinePlayer.getFoodLevel() + "/20");
+            sender.sendMessage(ChatColor.YELLOW + "Flying: " + 
+                (onlinePlayer.isFlying() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No"));
+        } else {
+            sender.sendMessage(ChatColor.YELLOW + "Status: " + ChatColor.RED + "Offline");
+            sender.sendMessage(ChatColor.GRAY + "Last seen: " + 
+                (target.getLastPlayed() > 0 ? new java.util.Date(target.getLastPlayed()) : "Never"));
+        }
+    }
+    
+    private void handleRemove(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Usage: /admin remove <player|uuid>");
+            sender.sendMessage(ChatColor.YELLOW + "Remove all admin status from a player using name or UUID");
+            return;
+        }
+        
+        OfflinePlayer target = resolvePlayer(args[1]);
+        if (!canModifyOfflinePlayer(target)) {
+            sender.sendMessage(ChatColor.RED + "Player not found or has never joined: " + args[1]);
+            return;
+        }
+        
+        UUID uuid = target.getUniqueId();
+        String displayName = getPlayerDisplayName(target);
+        
+        boolean hadInvuln = adminManager.isInvulnerable(uuid);
+        boolean hadGodMode = adminManager.getGodModePlayers().contains(uuid);
+        
+        adminManager.setInvulnerable(uuid, false);
+        adminManager.setGodMode(uuid, false);
+        
+        if (hadInvuln || hadGodMode) {
+            sender.sendMessage(ChatColor.GREEN + "Removed all admin status from " + displayName);
+            if (target instanceof Player onlineTarget) {
+                onlineTarget.sendMessage(ChatColor.YELLOW + "Your admin status has been removed by " + sender.getName());
+            }
+        } else {
+            sender.sendMessage(ChatColor.YELLOW + displayName + " had no admin status to remove");
+        }
     }
     
     @Override
@@ -375,11 +463,11 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         
         if (args.length == 1) {
             completions.addAll(Arrays.asList("heal", "feed", "max", "kill", "invulnerable", "godmode", 
-                "tp", "tphere", "freeze", "speed", "fly", "list", "clear"));
+                "tp", "tphere", "freeze", "speed", "fly", "list", "status", "remove", "clear"));
         } else if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
             if (Arrays.asList("heal", "feed", "max", "kill", "invulnerable", "godmode", 
-                "tphere", "freeze", "speed", "fly").contains(subCommand)) {
+                "tphere", "freeze", "speed", "fly", "status", "remove").contains(subCommand)) {
                 completions.addAll(Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .collect(Collectors.toList()));
@@ -406,5 +494,30 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             .filter(s -> s.toLowerCase().startsWith(partial))
             .sorted()
             .collect(Collectors.toList());
+    }
+    
+    private OfflinePlayer resolvePlayer(String identifier) {
+        try {
+            UUID uuid = UUID.fromString(identifier);
+            return Bukkit.getOfflinePlayer(uuid);
+        } catch (IllegalArgumentException e) {
+            Player onlinePlayer = Bukkit.getPlayer(identifier);
+            if (onlinePlayer != null) {
+                return onlinePlayer;
+            }
+            return Bukkit.getOfflinePlayer(identifier);
+        }
+    }
+    
+    private String getPlayerDisplayName(OfflinePlayer player) {
+        if (player instanceof Player onlinePlayer) {
+            return onlinePlayer.getName();
+        }
+        String name = player.getName();
+        return name != null ? name + " (offline)" : player.getUniqueId().toString() + " (offline)";
+    }
+    
+    private boolean canModifyOfflinePlayer(OfflinePlayer player) {
+        return player.hasPlayedBefore() || player.isOnline();
     }
 }
