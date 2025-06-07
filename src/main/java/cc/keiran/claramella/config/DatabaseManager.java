@@ -50,6 +50,10 @@ public class DatabaseManager {
         defaultConfig.put("admin.heal_removes_exhaustion", true);
         defaultConfig.put("admin.max_gives_experience", false);
         defaultConfig.put("admin.auto_heal_on_join", false);
+        defaultConfig.put("warp.cooldown_seconds", 5);
+        defaultConfig.put("warp.max_warps_per_player", 10);
+        defaultConfig.put("warp.require_safe_teleport", true);
+        defaultConfig.put("warp.teleport_delay_seconds", 3);
         defaultConfig.put("plugin.debug_mode", false);
         defaultConfig.put("plugin.language", "en");
     }

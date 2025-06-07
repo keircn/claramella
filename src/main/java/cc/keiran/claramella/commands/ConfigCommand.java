@@ -45,6 +45,10 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
         validKeys.put("admin.heal_removes_exhaustion", Boolean.class);
         validKeys.put("admin.max_gives_experience", Boolean.class);
         validKeys.put("admin.auto_heal_on_join", Boolean.class);
+        validKeys.put("warp.cooldown_seconds", Integer.class);
+        validKeys.put("warp.max_warps_per_player", Integer.class);
+        validKeys.put("warp.require_safe_teleport", Boolean.class);
+        validKeys.put("warp.teleport_delay_seconds", Integer.class);
         validKeys.put("plugin.debug_mode", Boolean.class);
         validKeys.put("plugin.language", String.class);
     }
@@ -171,6 +175,7 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
                 yield f >= 0.0f && f <= 1.0f;
             }
             case "admin.invulnerability_timeout" -> (Long) value >= 0;
+            case "warp.cooldown_seconds", "warp.max_warps_per_player", "warp.teleport_delay_seconds" -> (Integer) value >= 0;
             default -> true;
         };
     }
