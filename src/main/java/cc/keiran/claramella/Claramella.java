@@ -38,10 +38,10 @@ public class Claramella extends JavaPlugin {
         getCommand("admin").setTabCompleter(adminCommand);
 
         if (databaseManager.getConfigValue("plugin.debug_mode", Boolean.class, false)) {
-            getLogger().info("Debug mode enabled - enhanced logging active");
+            getLogger().info("Debug mode enabled");
         }
 
-        getLogger().info("Claramella has been enabled with admin management and database configuration system.");
+        getLogger().info("Claramella has been enabled.");
     }
 
     @Override
