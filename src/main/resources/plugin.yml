@@ -17,6 +17,11 @@ commands:
     usage: /<command> <subcommand> [args...]
     aliases: [a]
     permission: claramella.admin
+  warp:
+    description: Warp teleportation system
+    usage: /<command> [create|delete|list|info|help|<warp_name>]
+    aliases: [warps]
+    permission: claramella.warp.use
 
 permissions:
   claramella.*:
@@ -38,6 +43,7 @@ permissions:
       claramella.admin.fly: true
       claramella.admin.clear: true
       claramella.admin.list: true
+      claramella.warp.*: true
   claramella.config:
     description: Allows access to configuration commands
     default: op
@@ -96,4 +102,28 @@ permissions:
     default: op
   claramella.admin.list:
     description: Allows listing admin status of players
+    default: op
+  claramella.warp.*:
+    description: Gives access to all warp commands
+    default: false
+    children:
+      claramella.warp.use: true
+      claramella.warp.list: true
+      claramella.warp.info: true
+      claramella.warp.create: true
+      claramella.warp.delete: true
+  claramella.warp.use:
+    description: Allows using warps to teleport
+    default: true
+  claramella.warp.list:
+    description: Allows listing available warps
+    default: true
+  claramella.warp.info:
+    description: Allows viewing warp information
+    default: true
+  claramella.warp.create:
+    description: Allows creating new warps
+    default: op
+  claramella.warp.delete:
+    description: Allows deleting warps
     default: op
